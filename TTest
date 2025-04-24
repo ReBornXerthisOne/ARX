@@ -1,5 +1,5 @@
 repeat wait() until game:GetService("Players").LocalPlayer
-repeat wait() until .game:GetService("ReplicatedStorage").Player_Data
+repeat wait() until game:GetService("ReplicatedStorage").Player_Data
 function loadcheck()
     local fileName = "RebornXer Hub Anime Rangers X [" .. game.Players.LocalPlayer.Name .. "].json"
     
@@ -1074,7 +1074,6 @@ LoadSetting()
     
     function main:AddButtonR(text, callback)
         if not MainFramePage2 then
-            warn("MainFramePage2 is not defined")
             return
         end
         
@@ -1147,14 +1146,12 @@ LoadSetting()
             if callback then
                 callback()
             else
-                warn("Callback function is not defined")
             end
         end)
     end
     
     function main:AddButtonL(text, callback)
         if not MainFramePage then
-            warn("MainFramePage is not defined")
             return
         end
     
@@ -1227,7 +1224,6 @@ LoadSetting()
             if callback then
                 callback()
             else
-                warn("Callback function is not defined")
             end
         end)
     end
@@ -2030,7 +2026,6 @@ spawn(function()
             					startRangerStage(stage.world, stage.chapter)
 
             -- รอด่านจบก่อนเริ่มด่านต่อไป
-            print("[Done] ด่านจบแล้ว:", stage.chapter)
 			end
 			end
         end
@@ -2078,10 +2073,8 @@ spawn(function()
 						until btnStart.Label.Visible == true 
 						if workspace:FindFirstChild("Lobby") then
 						playRoomEvent:FireServer("Start")
-						print("[Start] เริ่มเกมแล้ว")
 						end
 					else
-						warn("[Start] ไม่พบปุ่ม Start")
 					end
 				end
 			end)
@@ -2092,8 +2085,25 @@ spawn(function()
 	end
 end)
 
-
+    
+MAIN:AddToggleL("Auto Join Event Easter", _G.SST.Auto_Join_EventEaster, function(value)
+    Auto_Join_EventEaster = value
+    _G.SST.Auto_Join_EventEaster = Auto_Join_EventEaster
+    SS()
+end)
 -- Services & Variables
+spawn(function()
+    while wait() do
+        pcall(function()
+            if _G.SST.Auto_Join_EventEaster and  workspace:FindFirstChild("Lobby") then
+                repeat wait()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Easter-Event")
+                until  workspace:FindFirstChild("Lobby") or _G.SST.Auto_Join_EventEaster
+                game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Start")
+            end
+        end)
+    end
+end)
 
 -- UI
 AP:AddSeperatorL("Auto Play")
@@ -2345,7 +2355,6 @@ end
 RunService.Heartbeat:Connect(function()
 	if _G.SST and _G.SST.Boost_Fps and not _G.__BOOSTED then
 		_G.__BOOSTED = true
-		print("[Boost FPS] Activating...")
 		task.spawn(function()
 			optimizeTerrain(Terrain)
 			optimizeLighting(Lighting)
@@ -2396,7 +2405,6 @@ spawn(function()
 				VirtualUser:Button2Down(Vector2.new(9999,9999), workspace.CurrentCamera.CFrame)
 				task.wait(1)
 				VirtualUser:Button2Up(Vector2.new(9999,9999), workspace.CurrentCamera.CFrame)
-				print("[Anti-AFK] Triggered")
 			end)
 		end
 	end
