@@ -2778,7 +2778,8 @@ spawn(function()
     end
 end)
 
-RunService.Heartbeat:Connect(function()
+spawn(function()
+while wait() do
     pcall(function()
         local player = Players.LocalPlayer
         if _G.SST.Send_WebHook and OffSent then
@@ -2819,6 +2820,7 @@ RunService.Heartbeat:Connect(function()
             end
         end
     end)
+	end
 end)
 
 
