@@ -1,5 +1,19 @@
 repeat wait() until game:GetService("Players").LocalPlayer
 repeat wait() until game:GetService("ReplicatedStorage").Player_Data
+repeat wait() until game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(game:GetService("Players").LocalPlayer.Name)
+repeat wait() until game:IsLoaded()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+
+repeat wait() until ReplicatedStorage:FindFirstChild("Player_Data")
+repeat wait() until ReplicatedStorage.Player_Data:FindFirstChild(plr.Name)
+repeat wait() until ReplicatedStorage.Player_Data[plr.Name]:FindFirstChild("Collection")
+
+local Collection = ReplicatedStorage.Player_Data[plr.Name].Collection
+
+-- รอตรงนี้จนกว่าจะมี Children อย่างน้อย 1 ตัว
+repeat wait() until #Collection:GetChildren() > 0
 function loadcheck()
     local fileName = "RebornXer Hub Anime Rangers X [" .. game.Players.LocalPlayer.Name .. "].json"
     
@@ -11,7 +25,7 @@ function loadcheck()
 end
 
 pcall(function()
-    _G.SST = {Select_Vote = "VoteRetry",Auto_Upgrade = false,Auto_Vote = false,Auto_Upgtade_Maxyen = false,Auto_Vote_Start = false,Auto_Play = false,Black_Screen = false,Boost_Fps = false,Select_Farme_Rate = "60",Anti_AFK = true,Auto_Kick_Rejoin = false}
+    _G.SST = {Select_UnitCL = "Select",Select_Vote = "VoteRetry",Auto_Upgrade = false,Auto_Play_Full = false,Auto_Vote = false,Auto_Upgtade_Maxyen = false,Auto_Vote_Start = false,Auto_Play = false,Black_Screen = false,Boost_Fps = false,Select_Farme_Rate = "60",Anti_AFK = true,Auto_Kick_Rejoin = false,Select_Deley_Vote = "1"}
 end)
 
 
@@ -728,12 +742,19 @@ LoadSetting()
             UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             
             TabButton.MouseButton1Click:Connect(function()
-            Sound = Instance.new("Sound", game:GetService("Workspace")) -- ตรงนี้ไม่ต้องไปสน นาจา ;0;
-    Sound.Name = "Notify" -- ชื่อเสียง \;
-    Sound.SoundId = "rbxassetid://903267862" -- เลขขขขขเสียง ;/
-    Sound.Looped = false -- วนลูป :>
-    Sound.Playing = true -- เล่นเสียง :<
-    Sound.Volume = 1 -- ระดับเสียงงงงงงง ;-;
+local Sound = Instance.new("Sound", game:GetService("Workspace"))
+Sound.Name = "Notify"
+Sound.SoundId = "rbxassetid://903267862"
+Sound.Looped = false
+Sound.Volume = 1
+
+-- เมื่อเสียงเล่นจบ ให้ลบออก
+Sound.Ended:Connect(function()
+    Sound:Destroy()
+end)
+
+Sound:Play() -- ใช้ Sound:Play() แทนการตั้ง Sound.Playing = true
+
                 for i,v in next, ScrollTab:GetChildren() do
                     if v:IsA("TextButton") then
                         TweenService:Create(
@@ -916,12 +937,19 @@ LoadSetting()
             UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             
             mainDiscord.MouseButton1Click:Connect(function()
-            Sound = Instance.new("Sound", game:GetService("Workspace")) -- ตรงนี้ไม่ต้องไปสน นาจา ;0;
-    Sound.Name = "Notify" -- ชื่อเสียง \;
-    Sound.SoundId = "rbxassetid://3020841054" -- เลขขขขขเสียง ;/
-    Sound.Looped = false -- วนลูป :>
-    Sound.Playing = true -- เล่นเสียง :<
-    Sound.Volume = 1 -- ระดับเสียงงงงงงง ;-;
+                local Sound = Instance.new("Sound", game:GetService("Workspace"))
+Sound.Name = "Notify"
+Sound.SoundId = "rbxassetid://3020841054"
+Sound.Looped = false
+Sound.Volume = 1
+
+-- เมื่อเสียงเล่นจบ ให้ลบออก
+Sound.Ended:Connect(function()
+    Sound:Destroy()
+end)
+
+Sound:Play() -- ใช้ Sound:Play() แทนการตั้ง Sound.Playing = true
+
                 for i,v in next, ScrollTab:GetChildren() do
                     if v:IsA("TextButton") then
                         TweenService:Create(
@@ -1304,7 +1332,6 @@ function main:AddToggleR(text, config, callback)
     self:AddToggle(text, config, callback, MainFramePage2)
 end
 
- -- Helper function สำหรับสร้าง Dropdown
 local function createDropdown(params)
     local parent    = params.parent or error("Parent is required")
     local title     = params.title or "Dropdown"
@@ -1315,9 +1342,8 @@ local function createDropdown(params)
     local dropdown = {}
     local toggled = false
     local itemCount = 0
-    local frameExtra = 0  -- ส่วนเพิ่มความสูงของ frame ตามจำนวน item
+    local frameExtra = 0
 
-    -- สร้าง Main Container
     local dropSizeFrame = Instance.new("Frame")
     dropSizeFrame.Name = title
     dropSizeFrame.Parent = parent
@@ -1325,7 +1351,6 @@ local function createDropdown(params)
     dropSizeFrame.BackgroundTransparency = 1
     dropSizeFrame.Size = UDim2.new(0, 280, 0, 60)
 
-    -- สร้าง Inner Frame
     local frame = Instance.new("Frame")
     frame.Parent = dropSizeFrame
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -1333,16 +1358,11 @@ local function createDropdown(params)
     frame.Position = UDim2.new(0, 3, 0, 0)
     frame.Size = UDim2.new(0, 278, 0, 60)
 
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.Parent = frame
-    uiStroke.Color = Color3.fromRGB(255, 255, 255)
-    uiStroke.Thickness = 0.7
+    local stroke = Instance.new("UIStroke")
+	stroke.Parent = frame
+	stroke.Thickness = 0.7
+	stroke.Color = Color3.fromRGB(255, 255, 255)
 
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.Parent = frame
-    uiCorner.CornerRadius = UDim.new(0, 3)
-
-    -- DropCover (Header)
     local dropCover = Instance.new("Frame")
     dropCover.Parent = frame
     dropCover.BackgroundTransparency = 1
@@ -1385,7 +1405,6 @@ local function createDropdown(params)
     imageButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
     imageButton.Rotation = 180
 
-    -- สร้าง DropTextList (สำหรับแสดงค่าปัจจุบันที่เลือก)
     local dropTextList = Instance.new("TextLabel")
     dropTextList.Name = "DropTextList"
     dropTextList.Parent = frame
@@ -1399,20 +1418,9 @@ local function createDropdown(params)
     dropTextList.TextSize = 12
     dropTextList.TextXAlignment = Enum.TextXAlignment.Center
 
-    local uiCorner2 = Instance.new("UICorner")
-    uiCorner2.Parent = dropTextList
-    uiCorner2.CornerRadius = UDim.new(0, 0)
+    Instance.new("UICorner", dropTextList)
+    Instance.new("UIStroke", dropTextList).Thickness = 0.2
 
-    local dropStrokeList = Instance.new("UIStroke")
-    dropStrokeList.Name = "DropStrokeList"
-    dropStrokeList.Parent = dropTextList
-    dropStrokeList.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    dropStrokeList.Color = Color3.fromRGB(255, 255, 255)
-    dropStrokeList.LineJoinMode = Enum.LineJoinMode.Round
-    dropStrokeList.Thickness = 0.2
-    dropStrokeList.Transparency = 0
-
-    -- สร้าง ScrollingFrame สำหรับรายการ Items
     local dropItemScroll = Instance.new("ScrollingFrame")
     dropItemScroll.Parent = frame
     dropItemScroll.BackgroundTransparency = 1
@@ -1424,14 +1432,18 @@ local function createDropdown(params)
     local dropItemLayout = Instance.new("UIListLayout")
     dropItemLayout.Parent = dropItemScroll
     dropItemLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    dropItemLayout.Padding = UDim.new(0, 0)
 
-    -- ฟังก์ชันการรีเซ็ตและเพิ่ม items ลงใน dropdown
+    local function closeDropdown()
+        toggled = false
+        dropSizeFrame:TweenSize(UDim2.new(0, 278, 0, 60), 'InOut', 'Linear', 0.08)
+        frame:TweenSize(UDim2.new(0, 278, 0, 60), 'InOut', 'Linear', 0.08)
+        dropItemScroll:TweenSize(UDim2.new(0, 278, 0, 0), 'InOut', 'Linear', 0.08)
+        game.TweenService:Create(imageButton, TweenInfo.new(0.08), {Rotation = 180}):Play()
+    end
+
     local function resetDropdown()
         for _, v in pairs(dropItemScroll:GetChildren()) do
-            if v:IsA("TextButton") then
-                v:Destroy()
-            end
+            if v:IsA("TextButton") then v:Destroy() end
         end
 
         itemCount = 0
@@ -1451,24 +1463,20 @@ local function createDropdown(params)
 
             button.MouseButton1Click:Connect(function()
                 callback(item)
-                dropTextList.Text = item  -- แสดงค่าที่ผู้ใช้เลือกใน dropTextList
+                dropTextList.Text = item
+                closeDropdown() -- <<< ปิดทันทีหลังเลือก
             end)
 
-            itemCount = itemCount + 1
-            frameExtra = frameExtra + 30
+            itemCount += 1
+            frameExtra += 30
         end
 
         dropItemScroll.CanvasSize = UDim2.new(0, 0, 0, frameExtra)
     end
 
-    -- Toggle dropdown
     imageButton.MouseButton1Click:Connect(function()
         if toggled then
-            toggled = false
-            dropSizeFrame:TweenSize(UDim2.new(0, 278, 0, 60), 'InOut', 'Linear', 0.08)
-            frame:TweenSize(UDim2.new(0, 278, 0, 60), 'InOut', 'Linear', 0.08)
-            dropItemScroll:TweenSize(UDim2.new(0, 278, 0, 0), 'InOut', 'Linear', 0.08)
-            game.TweenService:Create(imageButton, TweenInfo.new(0.08), {Rotation = 180}):Play()
+            closeDropdown()
         else
             resetDropdown()
             toggled = true
@@ -1482,8 +1490,6 @@ local function createDropdown(params)
     return dropdown
 end
 
-
--- สร้าง Dropdown ซ้าย (L)
 function main:AddDropdownL(droptitle, list, config, callback)
     return createDropdown({
         parent = MainFramePage,
@@ -1507,7 +1513,165 @@ function main:AddDropdownR(droptitle, list, config, callback)
     })
 end
 
-    
+local function createMultiDropdown(params)
+	local parent = params.parent or error("Parent is required")
+	local title = params.title or "Multi Dropdown"
+	local list = params.list or {}
+	local default = params.config or {"Select . . ."}
+	local callback = params.callback or function() end
+
+	local selectedItems = {}
+	for _, val in ipairs(default) do
+		selectedItems[val] = true
+	end
+
+	local toggled = false
+	local frameExtra = 0
+
+	local dropFrame = Instance.new("Frame")
+	dropFrame.Name = title
+	dropFrame.Parent = parent
+	dropFrame.BackgroundTransparency = 1
+	dropFrame.Size = UDim2.new(0, 280, 0, 60)
+
+	local base = Instance.new("Frame")
+	base.Parent = dropFrame
+	base.Size = UDim2.new(1, -2, 0, 60)
+	base.Position = UDim2.new(0, 1, 0, 0)
+	base.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	base.BorderSizePixel = 0
+
+	local corner = Instance.new("UICorner", base)
+	corner.CornerRadius = UDim.new(0, 4)
+
+	local stroke = Instance.new("UIStroke", base)
+	stroke.Thickness = 0.7
+	stroke.Color = Color3.fromRGB(255, 255, 255)
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Parent = base
+	titleLabel.Size = UDim2.new(1, -40, 0, 30)
+	titleLabel.Position = UDim2.new(0, 10, 0, 0)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Text = title
+	titleLabel.Font = Enum.Font.Code
+	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	titleLabel.TextSize = 12
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local toggleBtn = Instance.new("ImageButton")
+	toggleBtn.Parent = base
+	toggleBtn.Size = UDim2.new(0, 23, 0, 18)
+	toggleBtn.Position = UDim2.new(1, -28, 0, 6)
+	toggleBtn.BackgroundTransparency = 1
+	toggleBtn.Image = "rbxassetid://79907159650860"
+	toggleBtn.Rotation = 180
+
+	local selectedText = Instance.new("TextLabel")
+	selectedText.Parent = base
+	selectedText.Position = UDim2.new(0, 3, 0, 30)
+	selectedText.Size = UDim2.new(1, -6, 0, 25)
+	selectedText.BackgroundTransparency = 1
+	selectedText.Text = "Select . . ."
+	selectedText.Font = Enum.Font.Code
+	selectedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+	selectedText.TextSize = 12
+	selectedText.TextXAlignment = Enum.TextXAlignment.Center
+
+	local itemScroll = Instance.new("ScrollingFrame")
+	itemScroll.Parent = base
+	itemScroll.Position = UDim2.new(0, 3, 0, 60)
+	itemScroll.Size = UDim2.new(1, -6, 0, 0)
+	itemScroll.BackgroundTransparency = 1
+	itemScroll.ScrollBarThickness = 0
+	itemScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	itemScroll.ClipsDescendants = true
+
+	local layout = Instance.new("UIListLayout", itemScroll)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+	for _, item in ipairs(list) do
+		local btn = Instance.new("TextButton")
+		btn.Parent = itemScroll
+		btn.Size = UDim2.new(1, 0, 0, 30)
+		btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		btn.TextSize = 14
+		btn.Font = Enum.Font.Code
+		btn.TextXAlignment = Enum.TextXAlignment.Left
+		btn.Text = "☐ " .. item
+
+		local function updateText()
+			if selectedItems[item] then
+				btn.Text = "☑ " .. item
+			else
+				btn.Text = "☐ " .. item
+			end
+
+			local resultList = {}
+			for k, _ in pairs(selectedItems) do
+				table.insert(resultList, k)
+			end
+			selectedText.Text = #resultList > 0 and table.concat(resultList, ", ") or "Select . . ."
+			callback(resultList)
+		end
+
+		btn.MouseButton1Click:Connect(function()
+			if selectedItems[item] then
+				selectedItems[item] = nil
+			else
+				selectedItems[item] = true
+			end
+			updateText()
+		end)
+
+		updateText()
+		frameExtra += 30
+	end
+
+	itemScroll.CanvasSize = UDim2.new(0, 0, 0, frameExtra)
+
+	toggleBtn.MouseButton1Click:Connect(function()
+		toggled = not toggled
+		local newSize = toggled and (60 + frameExtra) or 60
+		itemScroll:TweenSize(UDim2.new(1, -6, 0, toggled and frameExtra or 0), 'InOut', 'Linear', 0.1, true)
+		base:TweenSize(UDim2.new(1, -2, 0, newSize), 'InOut', 'Linear', 0.1, true)
+		dropFrame:TweenSize(UDim2.new(0, 280, 0, newSize), 'InOut', 'Linear', 0.1, true)
+		toggleBtn.Rotation = toggled and 0 or 180
+	end)
+
+	return {
+		GetSelected = function()
+			local result = {}
+			for k, _ in pairs(selectedItems) do
+				table.insert(result, k)
+			end
+			return result
+		end
+	}
+end
+
+   
+function main:AddMultiDropdownL(title, list, default, callback)
+    return createMultiDropdown({
+        parent = MainFramePage,
+        title = title,
+        list = list,
+        config = default,
+        callback = callback
+    })
+end
+
+function main:AddMultiDropdownR(title, list, default, callback)
+    return createMultiDropdown({
+        parent = MainFramePage2,
+        title = title,
+        list = list,
+        config = default,
+        callback = callback
+    })
+end
+
     
     local function createSlider(parent, text, min, max, set, callback)
         local Slider = Instance.new("Frame")
@@ -1727,11 +1891,11 @@ end
     end
     
     -- Function Wrapper for Left & Right
-    function main:AddTextboxLeft(text, texts, disappear, callback)
+    function main:AddTextboxL(text, texts, disappear, callback)
         self:AddTextbox("Left", MainFramePage, text, texts, disappear, callback)
     end
     
-    function main:AddTextboxRight(text, texts, disappear, callback)
+    function main:AddTextboxR(text, texts, disappear, callback)
         self:AddTextbox("Right", MainFramePage2, text, texts, disappear, callback)
     end
     
@@ -1935,29 +2099,6 @@ end
         return uitab
     end
 
-local function CreateRoom(worldName, chapterName)
-    local playRoomEvent = game:GetService("ReplicatedStorage"):WaitForChild("Remote")
-        :WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event")
-
-    -- ตั้ง event รับค่าตอบกลับ
-    playRoomEvent.OnClientEvent:Connect(function(response)
-        if response == "Create-Completed" then
-            playRoomEvent:FireServer("Change-Mode", { Mode = "Ranger Stage" })
-        elseif response == "Mode-Changed" then
-            playRoomEvent:FireServer("Change-World", { World = worldName })
-        elseif response == "World-Changed" then
-            playRoomEvent:FireServer("Change-Chapter", { Chapter = chapterName })
-        elseif response == "Chapter-Changed" then
-            playRoomEvent:FireServer("Submit")
-        elseif response == "Submitted" then
-            playRoomEvent:FireServer("Start")
-        end
-    end)
-
-    -- เริ่มการสร้างห้อง
-    playRoomEvent:FireServer("Create")
-end
-
 
     local RebornXerUiMain = Update:AddWindow("RebornXer Hub", "10039618734", Enum.KeyCode.RightControl)
 
@@ -1975,10 +2116,10 @@ end
     MAIN:AddLabelL("Day : " .. Date)
     MAIN:AddLineL("")
 
-   MAIN:AddSeperatorL("Join")
+   MAIN:AddSeperatorL("Join Story")
 
-    
-MAIN:AddToggleL("Auto Join Ranger", _G.SST.Auto_Join_Ranger, function(value)
+   MAIN:AddSeperatorL("Join Ranger")
+ MAIN:AddToggleL("Auto Join Ranger", _G.SST.Auto_Join_Ranger, function(value)
     Auto_Join_Ranger = value
     _G.SST.Auto_Join_Ranger = Auto_Join_Ranger
     SS()
@@ -1999,38 +2140,50 @@ end
 
 local allStages = {
     { world = "OnePiece", chapter = "OnePiece_RangerStage1" },
-    { world = "OnePiece", chapter = "OnePiece_RangerStage2" },
-    { world = "OnePiece", chapter = "OnePiece_RangerStage3" },
     { world = "Namek", chapter = "Namek_RangerStage1" },
-    { world = "Namek", chapter = "Namek_RangerStage2" },
-    { world = "Namek", chapter = "Namek_RangerStage3" },
     { world = "DemonSlayer", chapter = "DemonSlayer_RangerStage1" },
-    { world = "DemonSlayer", chapter = "DemonSlayer_RangerStage2" },
-    { world = "DemonSlayer", chapter = "DemonSlayer_RangerStage3" },
     { world = "Naruto", chapter = "Naruto_RangerStage1" },
-    { world = "Naruto", chapter = "Naruto_RangerStage2" },
-    { world = "Naruto", chapter = "Naruto_RangerStage3" },
     { world = "OPM", chapter = "OPM_RangerStage1" },
+    { world = "OnePiece", chapter = "OnePiece_RangerStage2" },
+    { world = "Namek", chapter = "Namek_RangerStage2" },
+    { world = "DemonSlayer", chapter = "DemonSlayer_RangerStage2" },
+    { world = "Naruto", chapter = "Naruto_RangerStage2" },
     { world = "OPM", chapter = "OPM_RangerStage2" },
+    { world = "OnePiece", chapter = "OnePiece_RangerStage3" },
+    { world = "Namek", chapter = "Namek_RangerStage3" },
+    { world = "DemonSlayer", chapter = "DemonSlayer_RangerStage3" },
+    { world = "Naruto", chapter = "Naruto_RangerStage3" },
     { world = "OPM", chapter = "OPM_RangerStage3" },
 }
 
+
 -- วนลูปแบบเรียงลำดับ
-spawn(function()
+task.spawn(function()
+    local player = game:GetService("Players").LocalPlayer
+    local PyName = player.Name
+    local rangerStage = game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(PyName).RangerStage
+
     while task.wait() do
-        if _G.SST.Auto_Join_Ranger or workspace:FindFirstChild("Lobby") then 
-        for _, stage in ipairs(allStages) do
-            if _G.SST.Auto_Join_Ranger then
-				            repeat task.wait() until  workspace:FindFirstChild("Lobby")
+        if _G.SST.Auto_Join_Ranger and workspace:FindFirstChild("Lobby") and #rangerStage:GetChildren() < 15 then 
+            for _, stage in ipairs(allStages) do
+                while workspace:FindFirstChild("Lobby")
+                    and _G.SST.Auto_Join_Ranger
+                    and #rangerStage:GetChildren() < 15
+                    and not player.PlayerGui:FindFirstChild("SystemMessage") do
 
-            					startRangerStage(stage.world, stage.chapter)
-
-            -- รอด่านจบก่อนเริ่มด่านต่อไป
-			end
-			end
+                    task.wait()
+                    startRangerStage(stage.world, stage.chapter)
+                    -- ไม่ต้องใช้ childrenCount แยกอีกแล้ว ใช้ #rangerStage:GetChildren() ตรงๆ
+                end
+            end
         end
     end
 end)
+
+
+
+
+
 
 
 
@@ -2040,52 +2193,24 @@ MAIN:AddToggleL("Auto Join Challenge", _G.SST.Auto_Join_Challenge, function(valu
     SS()
 end)
 
--- == Auto Join Challenge == --
 spawn(function()
-	local player = game.Players.LocalPlayer
-	local replicatedStorage = game:GetService("ReplicatedStorage")
-	local playRoomEvent = replicatedStorage:WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event")
+    while wait() do
+        if _G.SST.Auto_Join_Challenge and workspace:FindFirstChild("Lobby") then
+            repeat wait()
+                local ChallengeList = {
+    [1] = "Create",
+    [2] = {
+        ["CreateChallengeRoom"] = true
+    }
+}
 
-	while true do
-		if _G.SST.Auto_Join_Challenge then
-			pcall(function()
-				-- ส่งคำสั่ง CreateChallengeRoom ก่อน
-				repeat wait()
-				local args = {
-					[1] = "Create",
-					[2] = {
-						["CreateChallengeRoom"] = true
-					}
-				}
-				playRoomEvent:FireServer(unpack(args))
- until workspace:FindFirstChild("Lobby")
-				local gui = player:WaitForChild("PlayerGui", 5)
-				local playRoomUI = gui:FindFirstChild("PlayRoom")
-				if playRoomUI then
-					local btnStart = playRoomUI:WaitForChild("Main", 5)
-						and playRoomUI.Main:WaitForChild("Game_Submit", 5)
-						and playRoomUI.Main.Game_Submit:WaitForChild("Button", 5)
-						and playRoomUI.Main.Game_Submit.Button:FindFirstChild("Start")
+game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer(unpack(ChallengeList))
+                game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Start")
+            until not _G.SST.Auto_Join_Challenge or not workspace:FindFirstChild("Lobby") or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("SystemMessage")
+        end
+    end
+end)    
 
-					if btnStart and btnStart:FindFirstChild("Label") then
-						repeat
-							task.wait()
-						until btnStart.Label.Visible == true 
-						if workspace:FindFirstChild("Lobby") then
-						playRoomEvent:FireServer("Start")
-						end
-					else
-					end
-				end
-			end)
-			task.wait(2)
-		else
-			task.wait(1)
-		end
-	end
-end)
-
-    
 MAIN:AddToggleL("Auto Join Event Easter", _G.SST.Auto_Join_EventEaster, function(value)
     Auto_Join_EventEaster = value
     _G.SST.Auto_Join_EventEaster = Auto_Join_EventEaster
@@ -2098,20 +2223,177 @@ spawn(function()
             if _G.SST.Auto_Join_EventEaster and  workspace:FindFirstChild("Lobby") then
                 repeat wait()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Easter-Event")
-                until  workspace:FindFirstChild("Lobby") or _G.SST.Auto_Join_EventEaster
-                game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Start")
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Server"):WaitForChild("PlayRoom"):WaitForChild("Event"):FireServer("Start")
+                until not workspace:FindFirstChild("Lobby") or not _G.SST.Auto_Join_EventEaster or game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("SystemMessage")
             end
         end)
     end
 end)
 
--- UI
+
+MAIN:AddSeperatorR("Stats Potential")
+
+local rs = game:GetService("ReplicatedStorage")
+local plr = game:GetService("Players").LocalPlayer
+local remote = rs.Remote.Server.Gambling.RerollPotential
+local UnitList = {}
+
+-- ตรวจสอบ Collection
+local PlayerData = rs:WaitForChild("Player_Data"):FindFirstChild(plr.Name)
+if not PlayerData then
+    warn("ไม่พบข้อมูล Player_Data ของผู้เล่น:", plr.Name)
+    return
+end
+
+local GetUnitPlayer = PlayerData:FindFirstChild("Collection")
+if not GetUnitPlayer then
+    warn("ไม่พบ Collection ของผู้เล่น")
+    return
+end
+
+-- ดึงรายชื่อยูนิต
+for _, unit in ipairs(GetUnitPlayer:GetChildren()) do
+    table.insert(UnitList, unit.Name)
+end
+
+-- ตัวแปรและค่าเริ่มต้น
+_G.SST = _G.SST or {}
+_G.SST.Select_UnitCL = _G.SST.Select_UnitCL or "Selecting"
+_G.SST.Select_Potential = _G.SST.Select_Potential or {}
+_G.SST.Select_Stats = _G.SST.Select_Stats or {}
+_G.SST.Auto_ReRoll = _G.SST.Auto_ReRoll or false
+
+-- Dropdown เลือกยูนิต
+MAIN:AddDropdownR("Select Unit", UnitList, _G.SST.Select_UnitCL, function(value)
+    _G.SST.Select_UnitCL = value
+    SS()
+end)
+
+-- MultiDropdown สำหรับ Potential / Stats
+local PotentialList = {"Speed", "Range", "Health", "Damage", "AttackCooldown"}
+local StatsList = {"C-", "C", "C+", "B-", "B", "B+", "A-", "A","A+","S-","S","S+","SS","SSS","O-","O","O+"}
+
+MAIN:AddMultiDropdownR("Select Potential", PotentialList, _G.SST.Select_Potential, function(value)
+    _G.SST.Select_Potential = value
+    SS()
+end)
+
+MAIN:AddMultiDropdownR("Select Stats", StatsList, _G.SST.Select_Stats, function(value)
+    _G.SST.Select_Stats = value
+    SS()
+end)
+
+-- Toggle Auto ReRoll
+MAIN:AddToggleR("Auto ReRoll Stats Potential", _G.SST.Auto_ReRoll_Stats_Potential, function(value)
+    _G.SST.Auto_ReRoll_Stats_Potential = value
+    SS()
+end)
+
+-- ฟังก์ชันหลักสำหรับ ReRoll
+-- ฟังก์ชันหลักสำหรับ ReRoll
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            if _G.SST.Auto_ReRoll_Stats_Potential and _G.SST.Select_UnitCL and #_G.SST.Select_Potential > 0 then
+                local selectedUnit = GetUnitPlayer:FindFirstChild(_G.SST.Select_UnitCL)
+                if selectedUnit and selectedUnit:FindFirstChild("Tag") then
+                    local unitTag = selectedUnit.Tag.Value
+
+                    -- แปลง Select_Stats เป็น set table
+                    local desiredStats = {}
+                    for _, stat in ipairs(_G.SST.Select_Stats) do
+                        desiredStats[stat] = true
+                    end
+
+                    for _, potentialType in ipairs(_G.SST.Select_Potential) do
+                        local potential = selectedUnit:FindFirstChild(potentialType .. "Potential")
+                        if potential and not desiredStats[potential.Value] then
+                            local args = {
+                                potentialType,
+                                unitTag,
+                                "Selective"
+                            }
+                            remote:FireServer(unpack(args))
+                            repeat task.wait(0.2) until potential.Value ~= "" -- รอเปลี่ยนค่า
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+
+local NameUnit = MAIN:AddLabelR("")
+local CodeUnit = MAIN:AddLabelR("")
+local SpeedPot = MAIN:AddLabelR("")
+local RangePot = MAIN:AddLabelR("")
+local HealthPot = MAIN:AddLabelR("")
+local DamagePot = MAIN:AddLabelR("")
+local CooldownPot = MAIN:AddLabelR("")
+
+spawn(function()
+    while wait(0) do
+        pcall(function()
+            local unit = GetUnitPlayer:FindFirstChild(_G.SST.Select_UnitCL)
+            if unit then
+                NameUnit:Set("Name Unit  : " .. unit.Name)
+                CodeUnit:Set("CodeName Unit  : " .. unit.Tag.Value)
+                SpeedPot:Set("Speed Potential       : " .. unit.SpeedPotential.Value)
+                RangePot:Set("Range Potential       : " .. unit.RangePotential.Value)
+                HealthPot:Set("Health Potential      : " .. unit.HealthPotential.Value)
+                DamagePot:Set("Damage Potential      : " .. unit.DamagePotential.Value)
+                CooldownPot:Set("Attack Cooldown Pot. : " .. unit.AttackCooldownPotential.Value)
+                Trait:Set("Trait : " .. unit.PrimaryTrait.Value)
+            end
+        end)
+    end
+end)
+
+MAIN:AddSeperatorR("Trait Reroll")
+local TraitList = {"Superior I", "Superior II", "Superior III", "Horizon I", "Horizon II", "Horizon III", "Endure I", "Endure II","Endure III","Brute","Sniper","Colossal","Investor","Jokester","Blitz","Juggernaut","Millionaire","Violent","Seraph","Capitalist","Duplicator","Sovereign"}
+
+MAIN:AddMultiDropdownR("Select Trait", TraitList, _G.SST.Select_Trait, function(value)
+    _G.SST.Select_Trait = value
+    SS()
+end)
+
+MAIN:AddToggleR("Auto Reroll Trait",_G.SST.Auto_Reroll_Trait,function(value)
+Auto_Reroll_Trait = value
+_G.SST.Auto_Reroll_Trait = Auto_Reroll_Trait
+SS()
+end)
+
+local Trait = MAIN:AddLabelR("")
+
+spawn(function()
+    while wait(0) do
+        pcall(function()
+            local unit = GetUnitPlayer:FindFirstChild(_G.SST.Select_UnitCL)
+            if unit then
+                NameUnit:Set("Name Unit  : " .. unit.Name)
+                CodeUnit:Set("CodeName Unit  : " .. unit.Tag.Value)
+                SpeedPot:Set("Speed Potential       : " .. unit.SpeedPotential.Value)
+                RangePot:Set("Range Potential       : " .. unit.RangePotential.Value)
+                HealthPot:Set("Health Potential      : " .. unit.HealthPotential.Value)
+                DamagePot:Set("Damage Potential      : " .. unit.DamagePotential.Value)
+                CooldownPot:Set("Attack Cooldown Pot. : " .. unit.AttackCooldownPotential.Value)
+                Trait:Set("Trait : " .. unit.PrimaryTrait.Value)
+            end
+        end)
+    end
+end)
+
+
 AP:AddSeperatorL("Auto Play")
 AP:AddToggleL("Auto Play",_G.SST.Auto_Play,function(value)
 Auto_Play = value
 _G.SST.Auto_Play = Auto_Play
 SS()
 end)
+
+ 
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PN = Players.LocalPlayer.Name
@@ -2124,25 +2406,29 @@ spawn(function()
 		pcall(function()
 			if _G.SST.Auto_Play then
 				if PlayerData.Data.AutoPlay.Value == false then
+                    repeat wait()
 					AutoPlayRemote:FireServer()
-				end
-			else
-				if PlayerData.Data.AutoPlay.Value == true then
-					AutoPlayRemote:FireServer()
+                    until _G.SST.Auto_Play or PlayerData.Data.AutoPlay.Value == true
 				end
 			end
 		end)
 	end
-end)
+end) 
+
+
 
 AP:AddSeperatorR("Game Server")
 
 local listee = {"VoteRetry", "VoteNext"}
-AP:AddDropdownR("Select Vote", listee, _G.SST.Select_Vote, function(value)
+
+_G.SST.Select_Vote = type(_G.SST.Select_Vote) == "table" and _G.SST.Select_Vote or {}
+
+AP:AddMultiDropdownR("Select Vote", listee, _G.SST.Select_Vote, function(value)
     Select_Vote = value
-	_G.SST.Select_Vote = Select_Vote 
-    SS()
+    _G.SST.Select_Vote = Select_Vote 
+    pcall(SS)
 end)
+
 
 AP:AddToggleR("Auto Vote", _G.SST.Auto_Vote, function(state)
     Auto_Vote = state
@@ -2152,8 +2438,13 @@ AP:AddToggleR("Auto Vote", _G.SST.Auto_Vote, function(state)
 end)
 
 AP:AddSeperatorR("Vote Start")
-
-AP:AddToggleR("Auto Vote Start", _G.SST.Auto_Vote_Start, function(state)
+Select_Deley_Vote = _G.SST.Select_Deley_Vote or "1"
+AP:AddSliderR("Select Deley Vote","0","10",_G.SST.Select_Deley_Vote,function(value)
+    Select_Deley_Vote = value
+    _G.SST.Select_Deley_Vote = Select_Deley_Vote
+    SS()
+end)
+    AP:AddToggleR("Auto Vote Start", _G.SST.Auto_Vote_Start, function(state)
     Auto_Vote_Start = state
 	_G.SST.Auto_Vote_Start = Auto_Vote_Start 
 
@@ -2161,17 +2452,88 @@ AP:AddToggleR("Auto Vote Start", _G.SST.Auto_Vote_Start, function(state)
 end)
 
 AP:AddSeperatorR("Unit Upgrade")
+local player = game:GetService("Players").LocalPlayer
+local unitNames = {"All Unit"}
+
+-- ตรวจสอบก่อนว่า UnitsFolder มีอยู่ไหม
+if player:FindFirstChild("UnitsFolder") then
+    local unitsFolder = player.UnitsFolder
+    for _, unit in ipairs(unitsFolder:GetChildren()) do
+        table.insert(unitNames, unit.Name)
+    end
+end
+
+-- ตรงนี้จะทำงานไม่ว่าจะมี UnitsFolder หรือไม่
+AP:AddDropdownR("Select Unit to Upgrade", unitNames, _G.SST.Select_Unit, function(value)
+    Select_Unit = value
+    _G.SST.Select_Unit = Select_Unit
+    SS()
+end)
+
 AP:AddToggleR("Auto Upgrade Unit", _G.SST.Auto_Upgrade, function(state)
     Auto_Upgrade = state
 	_G.SST.Auto_Upgrade = Auto_Upgrade 
 
     SS()
 end)
+AP:AddToggleR("Wait For Upgrade Unit", _G.SST.Wait_For_Upgrade_Unit, function(state)
+    Wait_For_Upgrade_Unit = state
+	_G.SST.Wait_For_Upgrade_Unit = Wait_For_Upgrade_Unit 
+
+    SS()
+end)
+
+spawn(function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local player = Players.LocalPlayer
+    local gui = player:WaitForChild("PlayerGui")
+    local unitsFolder = player:WaitForChild("UnitsFolder", 9e9)
+
+    -- Remote Paths
+    local remoteFolder = ReplicatedStorage:WaitForChild("Remote", 9e9)
+    local serverRemotes = remoteFolder:WaitForChild("Server", 9e9)
+    local votePath = serverRemotes:WaitForChild("OnGame", 9e9):WaitForChild("Voting", 9e9)
+    local upgradeRemote = serverRemotes:WaitForChild("Units", 9e9):WaitForChild("Upgrade", 9e9)
+    local statsManagerRemote = serverRemotes:WaitForChild("Gameplay", 9e9):WaitForChild("StatsManager", 9e9)
+    local votePlayingRemote = votePath:WaitForChild("VotePlaying", 9e9)
+
+    -- Cache HUD Path
+    local hud = gui:WaitForChild("HUD", 9e9)
+    local inGameUI = hud and hud:WaitForChild("InGame", 9e9)
+    local votePlayingUI = inGameUI and inGameUI:WaitForChild("VotePlaying", 9e9)
+
+    while wait() do
+        pcall(function()
+            if _G.SST.Wait_For_Upgrade_Unit then
+                if PlayerData.Data.AutoPlay.Value == true then
+                    AutoPlayRemote:FireServer() 
+                    _G.SST.Auto_Play = false
+                else
+                    -- ไม่จำเป็นต้องระบุเงื่อนไขใน else
+                    for _, unit in ipairs(unitsFolder:GetChildren()) do
+                        if unit:IsA("Instance") then
+                            if sst.Select_Unit == "All Unit" or unit.Name == sst.Select_Unit then
+                                upgradeRemote:FireServer(unit)
+                                wait(4)
+                                _G.SST.Auto_Play = true
+                             if PlayerData.Data.AutoPlay.Value == true and _G.SST.Auto_Play then
+                                AutoPlayRemote:FireServer() 
+                             end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+
 
 AP:AddToggleR("Auto Upgrade Yen", _G.SST.Auto_Upgtade_Maxyen, function(state)
     Auto_Upgtade_Maxyen = state
 	_G.SST.Auto_Upgtade_Maxyen = Auto_Upgtade_Maxyen 
-
     SS()
 end)
 
@@ -2200,7 +2562,6 @@ task.spawn(function()
 	local player = Players.LocalPlayer
 	local gui = player:WaitForChild("PlayerGui")
 	local unitsFolder = player:WaitForChild("UnitsFolder", 9e9)
-
 	-- Remote Paths
 	local remoteFolder = ReplicatedStorage:WaitForChild("Remote", 9e9)
 	local serverRemotes = remoteFolder:WaitForChild("Server", 9e9)
@@ -2209,46 +2570,299 @@ task.spawn(function()
 	local statsManagerRemote = serverRemotes:WaitForChild("Gameplay", 9e9):WaitForChild("StatsManager", 9e9)
 	local votePlayingRemote = votePath:WaitForChild("VotePlaying", 9e9)
 
-	while task.wait(0.7) do
-		pcall(function()
-			local sst = _G.SST
-			if not sst then return end
+	-- Cache HUD Path
+	local hud = gui:WaitForChild("HUD", 9e9)
+	local inGameUI = hud and hud:WaitForChild("InGame", 9e9)
+	local votePlayingUI = inGameUI and inGameUI:WaitForChild("VotePlaying", 9e9)
 
-			-- Auto Vote
-			local endUI = gui:FindFirstChild("GameEndedAnimationUI")
-			if endUI and endUI.Enabled and sst.Auto_Vote and sst.Select_Vote then
-				local voteRemote = votePath:FindFirstChild(sst.Select_Vote)
-				if voteRemote then
-					voteRemote:FireServer()
-					endUI:Destroy()
+	while task.wait(0.7) do
+		local sst = _G.SST
+		if not sst then continue end
+
+		-- Auto Vote
+local vim = game:GetService("VirtualInputManager")
+local visual = workspace:FindFirstChild("Visual")
+
+if sst.Auto_Vote and sst.Select_Vote and visual then
+	pcall(function()
+		local voteName = typeof(sst.Select_Vote) == "table" and sst.Select_Vote[math.random(1, #sst.Select_Vote)] or nil
+		local voteRemote = voteName and votePath:FindFirstChild(voteName)
+		local rewardsUI = gui:FindFirstChild("RewardsUI")
+		
+		if voteRemote then
+			local hasModel = false
+			for _, child in ipairs(visual:GetChildren()) do
+				if child:IsA("Model") then
+					hasModel = true
+					local clickX, clickY = 100, 200
+					vim:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+					vim:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
 				end
 			end
+			if not hasModel and rewardsUI and rewardsUI.Enabled then
+				voteRemote:FireServer()
+			end
+		end
+	end)
+end
 
-			-- Auto Upgrade
-			if sst.Auto_Upgrade then
-				for _, unit in ipairs(unitsFolder:GetChildren()) do
-					if unit:IsA("Instance") then
-						upgradeRemote:FireServer(unit)
+
+
+
+
+
+		-- Auto Upgrade (เฉพาะตัวที่เลือก)
+		if sst.Auto_Upgrade and sst.Select_Unit then
+	local player = game:GetService("Players").LocalPlayer
+	local yenValue = player.PlayerGui.HUD.InGame.Main.Stats.Yen.YenValue.Value
+
+	for _, unit in ipairs(unitsFolder:GetChildren()) do
+		if unit:IsA("Instance") then
+			if sst.Select_Unit == "All Unit" or unit.Name == sst.Select_Unit then
+				local costTextObj = player.PlayerGui.HUD.InGame.UnitsManager.Main.Main.ScrollingFrame:FindFirstChild(unit.Name)
+				if costTextObj and costTextObj:FindFirstChild("CostText") then
+					local costText = costTextObj.CostText.Text
+					local cost = tonumber(costText:match("Cost:</font>%s*(%d+)")) or 0
+
+					if yenValue >= cost then
+						pcall(function()
+							task.wait(0.2)
+							upgradeRemote:FireServer(unit)
+						end)
 					end
 				end
 			end
+		end
+	end
+end
 
-			-- Auto Upgrade Max Yen
-			if sst.Auto_Upgrade_Maxyen then
+
+		-- Auto Upgrade Max Yen
+		if sst.Auto_Upgrade_Maxyen then
+			pcall(function()
 				statsManagerRemote:FireServer("MaximumYen")
-			end
+			end)
+		end
 
-			-- Auto Vote Start
-			local votePlayingUI = gui:FindFirstChild("HUD") and gui.HUD:FindFirstChild("InGame") and gui.HUD.InGame:FindFirstChild("VotePlaying")
-			if sst.Auto_Vote_Start and votePlayingUI and votePlayingUI.Visible then
+		-- Auto Vote Start
+		if sst.Auto_Vote_Start and votePlayingUI and votePlayingUI.Visible then
+			task.wait(sst.Select_Deley_Vote) -- ป้องกัน nil
+			pcall(function()
 				votePlayingRemote:FireServer()
-			end
-		end)
+			end)
+		end
 	end
 end)
 
+WH:AddSeperatorL("Code")
+WH:AddButtonL("Redreem All Code",function()
+    -- รายชื่อโค้ดล่าสุดสำหรับ Anime Rangers X (อัปเดต พ.ค. 2025)
+local redeemCodes = {
+	"SorryForIssues",
+	"Im Back",
+	"125M Visits",
+	"100K CCU",
+	"Easter Egg 2025!",
+    "CongratsFor1M"
+}
+
+-- Remote สำหรับใส่โค้ด
+local codeRemote = game:GetService("ReplicatedStorage").Remote.Server.Lobby.Code
+
+-- ใส่แต่ละโค้ดโดยอัตโนมัติ
+for _, code in ipairs(redeemCodes) do
+	pcall(function()
+		codeRemote:FireServer(code)
+	end)
+end
+end)
+WH:AddSeperatorR("WebHook")
+_G.SST.Place_WebHook_Link = _G.SST.Place_WebHook_Link or ""
+
+WH:AddTextboxR("Place WebHook Link", _G.SST.Place_WebHook_Link, " . . . ", function(value)
+    Place_WebHook_Link = value
+    _G.SST.Place_WebHook_Link = Place_WebHook_Link
+    pcall(SS)
+end)
+
+WH:AddToggleR("Send WebHook", _G.SST.Send_WebHook or false, function(value)
+    Send_WebHook = value
+    _G.SST.Send_WebHook = Send_WebHook
+    pcall(SS)
+end)
+
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local hasSent = false
+local function sendWebhook(Name, RewardsText, GameTime, player)
+    local url = _G.SST.Place_WebHook_Link
+    if not url or url == "" then
+        warn("Invalid Webhook URL")
+        return
+    end
+
+    local namePymain = Name
+    local playerData = game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain)
+
+    if not playerData then
+        warn("Player data not found for:", namePymain)
+        return
+    end
+
+    local fields = {}
+
+    -- Total Info Field
+    table.insert(fields, {
+        ["name"] = "📊 Total 📊",
+        ["value"] = "```Name      : " .. Name ..
+                    "\nGem       : " .. playerData.Data.Gem.Value ..
+                    "\nGold      : " .. playerData.Data.Gold.Value ..
+                    "\nLevel     : " .. playerData.Data.Level.Value ..
+                    "    Exp : " .. playerData.Data.Exp.Value ..
+                    "\nEgg : " .. playerData.Data.Egg.Value .. "```"
+    })
+
+    -- Time Field
+    table.insert(fields, {
+        ["name"] = "⌛ Time ⌛",
+        ["value"] = "```" .. GameTime .. "```"
+    })
+
+    -- Rewards Field
+    table.insert(fields, {
+        ["name"] = "🎁 Rewards 🎁",
+        ["value"] = "```" .. RewardsText .. "```"
+    })
+
+    local data = {
+        ["content"] = "",
+        ["embeds"] = {
+            {
+                ["author"] = { ["name"] = "ReBornxer Hub WebHook" },
+                ["type"] = "rich",
+                ["title"] = "Anime Rangers X",
+                ["color"] = tonumber(0x13da),
+                ["fields"] = fields
+            }
+        }
+    }
+
+    local jsonData = HttpService:JSONEncode(data)
+    local headers = { ["Content-Type"] = "application/json" }
+
+    local request = http_request or request or HttpPost or syn.request
+    if request then
+        local response = request({
+            Url = url,
+            Body = jsonData,
+            Method = "POST",
+            Headers = headers
+        })
+        if not response or response.StatusCode ~= 200 then
+            warn("Failed to send webhook. Status Code:", response and response.StatusCode)
+        end
+    else
+        warn("HTTP request function not available.")
+    end
+end
+local hasSent = false
+local OffSent = false
+
+spawn(function()
+    while wait() do
+        local player = Players.LocalPlayer
+        if player.PlayerGui:FindFirstChild("RewardsUI") then
+            OffSent = not player.PlayerGui.RewardsUI.Enabled
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        local player = Players.LocalPlayer
+        if _G.SST.Send_WebHook and OffSent then
+            local rewardsUI = player.PlayerGui:FindFirstChild("RewardsUI")
+            
+            if rewardsUI and rewardsUI.Enabled then
+                if not hasSent then
+                    local Name = player.Name
+                    local GameTime = rewardsUI.Main.LeftSide.TotalTime.Text
+                    local rewardsText = ""
+                    local rewardsFrame = player:FindFirstChild("RewardsShow")
+
+                    if rewardsFrame then
+                        for _, rewardItem in ipairs(rewardsFrame:GetChildren()) do
+                            if rewardItem:IsA("Folder") then
+                                local amt = rewardItem:FindFirstChild("Amount")
+                                local amount = nil
+                                if amt then
+                                    if amt:IsA("TextLabel") then
+                                        amount = amt.Text
+                                    elseif amt:IsA("IntValue") or amt:IsA("NumberValue") or amt:IsA("StringValue") then
+                                        amount = amt.Value
+                                    end
+                                end
+                                if amount then
+                                    rewardsText = rewardsText .. rewardItem.Name .. ": " .. tostring(amount) .. "\n"
+                                end
+                            end
+                        end
+                    end
+
+                    sendWebhook(Name, rewardsText, GameTime, player)
+                    hasSent = true
+                    OffSent = false
+                end
+            else
+                hasSent = false
+            end
+        end
+    end)
+end)
+
+
 
 WH:AddSeperatorR("BostFps")
+
+-- ตั้งชื่อเอฟเฟกต์หลักและชื่อที่ใช้ตอนปิด
+local EffectsName = "Effects"
+local EffectsHiddenName = "Effects_Hidden"
+
+local UnitAttacksEffectName = "UnitAttacks"
+local UnitAttacksEffectHiddenName = "UnitAttacks_Hidden"
+
+-- ปุ่ม Toggle เพื่อปิด/เปิด Effects
+WH:AddToggleR("Disable Effects", _G.SST.Disible_Effects, function(value)
+	_G.SST.Disible_Effects = value
+
+	local effectsFolder = game:GetService("ReplicatedStorage").Assets:FindFirstChild(EffectsName) or
+	                       game:GetService("ReplicatedStorage").Assets:FindFirstChild(EffectsHiddenName)
+local UnitAttacksEffectFolder = game:GetService("ReplicatedStorage"):FindFirstChild(UnitAttacksEffectName) or
+	                       game:GetService("ReplicatedStorage"):FindFirstChild(UnitAttacksEffectHiddenName)
+
+	if effectsFolder then
+		if value then
+			effectsFolder.Name = EffectsHiddenName
+		else
+			effectsFolder.Name = EffectsName
+		end
+	end
+
+	if UnitAttacksEffectFolder then
+		if value then
+			UnitAttacksEffectFolder.Name = EffectsHiddenName
+		else
+			UnitAttacksEffectFolder.Name = EffectsName
+		end
+	end
+
+	-- ฟังก์ชัน SS() หากจำเป็น
+	if typeof(SS) == "function" then
+		SS()
+	end
+end)
+
 local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local blackScreenUI = nil
@@ -2303,68 +2917,122 @@ WH:AddToggleR("Black Screen",_G.SST.Black_Screen, function(value)
     end
 end)
 
-WH:AddToggleR("Boost Fps",_G.SST.Boost_Fps,function(va)
-	Boost_Fps = va
+WH:AddToggleR("Boost Fps",_G.SST.Boost_Fps,function(val)
+	Boost_Fps = val
  _G.SST.Boost_Fps = Boost_Fps
  SS()
 end)
--- ✅ Boost FPS
-local function optimizeTerrain(t)
-	if not t then return end
-	t.WaterWaveSize = 0
-	t.WaterWaveSpeed = 0
-	t.WaterReflectance = 0
-	t.WaterTransparency = 1
-end
 
-local function optimizeLighting(l)
-	l.GlobalShadows = false
-	l.FogEnd = 1e10
-	l.Brightness = 0
-	for _, effect in ipairs(l:GetChildren()) do
-		if effect:IsA("PostEffect") or effect:IsA("BlurEffect") or effect:IsA("SunRaysEffect")
-			or effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") or effect:IsA("DepthOfFieldEffect") then
-			effect.Enabled = false
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
+local boosted = false
+
+-- แยกเก็บค่าปกติเพื่อคืนค่าตอนปิด
+local originalSettings = {
+	Terrain = {},
+	Lighting = {},
+	Effects = {},
+}
+
+-- ลดกราฟิก
+local function enableBoost()
+	if Terrain then
+		originalSettings.Terrain = {
+			WaterWaveSize = Terrain.WaterWaveSize,
+			WaterWaveSpeed = Terrain.WaterWaveSpeed,
+			WaterReflectance = Terrain.WaterReflectance,
+			WaterTransparency = Terrain.WaterTransparency
+		}
+		Terrain.WaterWaveSize = 0
+		Terrain.WaterWaveSpeed = 0
+		Terrain.WaterReflectance = 0
+		Terrain.WaterTransparency = 1
+	end
+
+	if Lighting then
+		originalSettings.Lighting = {
+			GlobalShadows = Lighting.GlobalShadows,
+			FogEnd = Lighting.FogEnd,
+			Brightness = Lighting.Brightness
+		}
+		Lighting.GlobalShadows = false
+		Lighting.FogEnd = 1e10
+		Lighting.Brightness = 0
+
+		for _, v in ipairs(Lighting:GetChildren()) do
+			if v:IsA("PostEffect") then
+				originalSettings.Effects[v.Name] = v.Enabled
+				v.Enabled = false
+			end
 		end
 	end
-end
 
-local function optimizeObjects(descendants)
-	for _, obj in ipairs(descendants) do
-		pcall(function()
-			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
-				obj.Material = Enum.Material.SmoothPlastic
-				obj.Reflectance = 0
-				obj.CastShadow = false
-			elseif obj:IsA("Decal") or obj:IsA("Texture") then
-				obj:Destroy()
-			elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
-				obj.Enabled = false
-				obj.Lifetime = NumberRange.new(0)
-			elseif obj:IsA("Sound") then
-				obj:Destroy()
-			elseif obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("SpotLight") or obj:IsA("Sparkles") then
-				obj.Enabled = false
-			elseif obj:IsA("Accessory") or obj:IsA("Clothing") or obj:IsA("Shirt") or obj:IsA("Pants") then
-				obj:Destroy()
-			end
-		end)
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+			obj.Material = Enum.Material.SmoothPlastic
+			obj.Reflectance = 0
+			obj.CastShadow = false
+		elseif obj:IsA("Decal") or obj:IsA("Texture") then
+			obj.Transparency = 1
+		elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+			obj.Enabled = false
+		elseif obj:IsA("Sound") then
+			obj.Volume = 0
+		elseif obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") or obj:IsA("SpotLight") then
+			obj.Enabled = false
+		elseif obj:IsA("Clothing") then
+			obj:Destroy()
+		end
 	end
+
+	pcall(function()
+		settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+	end)
+
+	print("✅ Boost FPS: ON")
 end
 
+-- คืนค่ากราฟิก
+local function disableBoost()
+	if Terrain and originalSettings.Terrain then
+		for k, v in pairs(originalSettings.Terrain) do
+			Terrain[k] = v
+		end
+	end
+
+	if Lighting and originalSettings.Lighting then
+		for k, v in pairs(originalSettings.Lighting) do
+			Lighting[k] = v
+		end
+
+		for _, v in ipairs(Lighting:GetChildren()) do
+			if v:IsA("PostEffect") and originalSettings.Effects[v.Name] ~= nil then
+				v.Enabled = originalSettings.Effects[v.Name]
+			end
+		end
+	end
+
+	print("🔄 Boost FPS: OFF (restored settings)")
+end
+
+-- ตัวจับ toggle
 RunService.Heartbeat:Connect(function()
-	if _G.SST and _G.SST.Boost_Fps and not _G.__BOOSTED then
-		_G.__BOOSTED = true
-		task.spawn(function()
-			optimizeTerrain(Terrain)
-			optimizeLighting(Lighting)
-			optimizeObjects(game:GetDescendants())
-			pcall(function()
-				settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-			end)
-		end)
+	if _G.SST and _G.SST.Boost_Fps then
+		if not boosted then
+			boosted = true
+			task.spawn(enableBoost)
+		end
+	else
+		if boosted then
+			boosted = false
+			task.spawn(disableBoost)
+		end
 	end
 end)
+
 
 
 -- สร้าง Slider สำหรับการเลือก Frame Rate
@@ -2385,6 +3053,7 @@ spawn(function()
 		end)
 	end
 end)
+
 
 
 
@@ -2429,18 +3098,25 @@ spawn(function()
 	end
 end)
 
-
-
-
-
 local namePymain = game.Players.LocalPlayer.Name
 CH:AddSeperatorL("Item")
-CH:AddSeperatorR("Player")
+CH:AddSeperatorR("Info")
 CH:AddLabelR("Name  : "..game.Players.LocalPlayer.Name)
-CH:AddLabelR("Level  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Level.Value.. "    Exp : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Exp.Value)
-CH:AddLabelR("Gem  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Gem.Value)
-CH:AddLabelR("Gold  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Gold.Value)
+local LV = CH:AddLabelR("")
+local GemAmount = CH:AddLabelR("")
+local GoleAmount = CH:AddLabelR("")
+local EggEsterAmount = CH:AddLabelR("")
 
+spawn(function()
+    while wait(1) do
+        pcall(function()
+                    EggEsterAmount:Set("Egg  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Egg.Value)
+					GoleAmount:Set("Gold  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Gold.Value)
+			    	GemAmount:Set("Gem  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Gem.Value)
+					LV:Set("Level  : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Level.Value.. "    Exp : "..game:GetService("ReplicatedStorage").Player_Data:FindFirstChild(namePymain).Data.Exp.Value)
+        end)
+    end
+end)
 
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -2471,3 +3147,66 @@ spawn(function()
         end)
     end
 end)
+
+DEVFUNCTION:AddToggleL("Auto Play Full",_G.SST.Auto_Play_Full,function(value)
+    Auto_Play_Full = value
+    _G.SST.Auto_Play_Full = Auto_Play_Full
+    SS()
+    end)
+
+DEVFUNCTION:AddMultiDropdownR("เลือกไอเทม", {"หมวก", "ดาบ", "โล่", "ไม้เท้า"}, nil, function(selected)
+    print("เลือกแล้ว:", table.concat(selected, ", "))
+end)
+
+
+    spawn(function()
+        local Players = game:GetService("Players")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local player = Players.LocalPlayer
+        local gui = player:WaitForChild("PlayerGui")
+        local unitsFolder = player:WaitForChild("UnitsFolder", 9e9)
+    
+        -- Remote Paths
+        local remoteFolder = ReplicatedStorage:WaitForChild("Remote", 9e9)
+        local serverRemotes = remoteFolder:WaitForChild("Server", 9e9)
+        local votePath = serverRemotes:WaitForChild("OnGame", 9e9):WaitForChild("Voting", 9e9)
+        local upgradeRemote = serverRemotes:WaitForChild("Units", 9e9):WaitForChild("Upgrade", 9e9)
+        local statsManagerRemote = serverRemotes:WaitForChild("Gameplay", 9e9):WaitForChild("StatsManager", 9e9)
+        local votePlayingRemote = votePath:WaitForChild("VotePlaying", 9e9)
+    
+        -- Cache HUD Path
+        local hud = gui:WaitForChild("HUD", 9e9)
+        local inGameUI = hud and hud:WaitForChild("InGame", 9e9)
+        local votePlayingUI = inGameUI and inGameUI:WaitForChild("VotePlaying", 9e9)
+        while wait() do
+            if _G.SST.Auto_Play_Full then
+                pcall(function()
+                    -- ตรวจสอบว่า UI โหวตกำลังแสดงอยู่หรือไม่
+                    if votePlayingUI and votePlayingUI.Visible then
+                        -- ทำการโหวต
+                        votePlayingRemote:FireServer()
+    
+                        -- อัพเกรดตัวละครก่อนใช้งาน AutoPlay
+                        if PlayerData.Data.AutoPlay.Value == false then
+                            for _, unit in ipairs(unitsFolder:GetChildren()) do
+                                if unit:IsA("Instance") then
+                                    pcall(function()
+                                        repeat
+                                            wait() -- รอให้ระบบอัพเกรดตัวละครก่อน
+                                            upgradeRemote:FireServer(unit)
+                                        until PlayerData.Data.AutoPlay.Value == true -- เมื่อ AutoPlay เป็น true
+                                        wait(3) -- ให้เวลาในการอัพเกรดก่อน
+                                    end)
+                                end
+                            end
+                        end
+    
+                        -- เปิดใช้ AutoPlay หลังจากอัพเกรดตัวละครเสร็จแล้ว
+                        if PlayerData.Data.AutoPlay.Value == true then
+                            AutoPlayRemote:FireServer() -- เปิดใช้ AutoPlay
+                        end
+                    end
+                end)
+            end
+        end
+    end)   
