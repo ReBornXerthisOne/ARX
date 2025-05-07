@@ -2770,7 +2770,7 @@ local hasSent = false
 local OffSent = false
 
 spawn(function()
-    while wait() do
+    while task.wait(0) do
         local player = Players.LocalPlayer
         if player.PlayerGui:FindFirstChild("RewardsUI") then
             OffSent = not player.PlayerGui.RewardsUI.Enabled
