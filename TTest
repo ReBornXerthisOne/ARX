@@ -2770,7 +2770,7 @@ local hasSent = false
 local OffSent = false
 
 spawn(function()
-    while wait(0.8) do
+    while wait() do
         local player = Players.LocalPlayer
         if player.PlayerGui:FindFirstChild("RewardsUI") then
             OffSent = not player.PlayerGui.RewardsUI.Enabled
@@ -2778,8 +2778,7 @@ spawn(function()
     end
 end)
 
-spawn(function()
-while wait() do
+RunService.Heartbeat:Connect(function()
     pcall(function()
         local player = Players.LocalPlayer
         if _G.SST.Send_WebHook and OffSent then
@@ -2820,7 +2819,6 @@ while wait() do
             end
         end
     end)
-	end
 end)
 
 
@@ -3124,16 +3122,19 @@ end)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local itemsFolder = ReplicatedStorage.Player_Data:FindFirstChild(namePymain).Items
 
-local itemLabels = {} -- Table สำหรับเก็บ Label ของแต่ละไอเทม
+local itemLabels = {} 
 
--- สร้าง Label สำหรับแต่ละไอเทม
-for _, item in ipairs(itemsFolder:GetChildren()) do
+local sortedItems = itemsFolder:GetChildren()
+table.sort(sortedItems, function(a, b)
+    return a.Name:lower() < b.Name:lower()
+end)
+
+for _, item in ipairs(sortedItems) do
     local itemName = item.Name
     local label = CH:AddLabelL("" .. itemName .. " : Loading...")
     itemLabels[itemName] = label
 end
 
--- เริ่มลูปอัปเดตจำนวนของแต่ละไอเทม
 spawn(function()
     while wait(1) do
         pcall(function()
@@ -3150,65 +3151,3 @@ spawn(function()
     end
 end)
 
-DEVFUNCTION:AddToggleL("Auto Play Full",_G.SST.Auto_Play_Full,function(value)
-    Auto_Play_Full = value
-    _G.SST.Auto_Play_Full = Auto_Play_Full
-    SS()
-    end)
-
-DEVFUNCTION:AddMultiDropdownR("เลือกไอเทม", {"หมวก", "ดาบ", "โล่", "ไม้เท้า"}, nil, function(selected)
-    print("เลือกแล้ว:", table.concat(selected, ", "))
-end)
-
-
-    spawn(function()
-        local Players = game:GetService("Players")
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local player = Players.LocalPlayer
-        local gui = player:WaitForChild("PlayerGui")
-        local unitsFolder = player:WaitForChild("UnitsFolder", 9e9)
-    
-        -- Remote Paths
-        local remoteFolder = ReplicatedStorage:WaitForChild("Remote", 9e9)
-        local serverRemotes = remoteFolder:WaitForChild("Server", 9e9)
-        local votePath = serverRemotes:WaitForChild("OnGame", 9e9):WaitForChild("Voting", 9e9)
-        local upgradeRemote = serverRemotes:WaitForChild("Units", 9e9):WaitForChild("Upgrade", 9e9)
-        local statsManagerRemote = serverRemotes:WaitForChild("Gameplay", 9e9):WaitForChild("StatsManager", 9e9)
-        local votePlayingRemote = votePath:WaitForChild("VotePlaying", 9e9)
-    
-        -- Cache HUD Path
-        local hud = gui:WaitForChild("HUD", 9e9)
-        local inGameUI = hud and hud:WaitForChild("InGame", 9e9)
-        local votePlayingUI = inGameUI and inGameUI:WaitForChild("VotePlaying", 9e9)
-        while wait() do
-            if _G.SST.Auto_Play_Full then
-                pcall(function()
-                    -- ตรวจสอบว่า UI โหวตกำลังแสดงอยู่หรือไม่
-                    if votePlayingUI and votePlayingUI.Visible then
-                        -- ทำการโหวต
-                        votePlayingRemote:FireServer()
-    
-                        -- อัพเกรดตัวละครก่อนใช้งาน AutoPlay
-                        if PlayerData.Data.AutoPlay.Value == false then
-                            for _, unit in ipairs(unitsFolder:GetChildren()) do
-                                if unit:IsA("Instance") then
-                                    pcall(function()
-                                        repeat
-                                            wait() -- รอให้ระบบอัพเกรดตัวละครก่อน
-                                            upgradeRemote:FireServer(unit)
-                                        until PlayerData.Data.AutoPlay.Value == true -- เมื่อ AutoPlay เป็น true
-                                        wait(3) -- ให้เวลาในการอัพเกรดก่อน
-                                    end)
-                                end
-                            end
-                        end
-    
-                        -- เปิดใช้ AutoPlay หลังจากอัพเกรดตัวละครเสร็จแล้ว
-                        if PlayerData.Data.AutoPlay.Value == true then
-                            AutoPlayRemote:FireServer() -- เปิดใช้ AutoPlay
-                        end
-                    end
-                end)
-            end
-        end
-    end)   
